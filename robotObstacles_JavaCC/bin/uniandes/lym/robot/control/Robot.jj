@@ -67,8 +67,14 @@ TOKEN: /* Nombres de Comandos */
 		| 	<T_TURNRIGHT: "TURNRIGHT">
 		| 	<T_PONER: "Put">
 		| 	<T_RECOGER: "Pick">
-		
-
+		| 	<T_CAMINAR: "walk">
+		| 	<T_ROTAR: "Rotate">
+		| 	<T_MIRAR: "Look">
+		| 	<T_SOLTAR: "drop">
+		| 	<T_LIBERAR: "free">
+		| 	<T_COGER: "grab">
+		| 	<T_CAMINAR_A: "walkTo">
+		| 	<T_NOP: "NOP">		
 }
 
 TOKEN :
@@ -78,11 +84,36 @@ TOKEN :
 
 }
 
+TOKEN :/*CONDITIONALS*/
+{
+		<IF: "if" >
+		|  	<BLOCKED: "bloqued">
+		|  	<FACING: "facing">
+		|  	<CAN: "can">
+		|  	<NOT: "not">
+		
+}
+
 
 TOKEN :
 {
 		<NUMERO: (<DIGIT>)+ >
 		|  	<#DIGIT: ["0"-"9"] >
+}
+
+TOKEN : /*DIRECTIONS*/
+{
+		<LEFT: "left" >
+		|  <RIGHT: "right" >
+		|  <BACK: "back" >
+}
+
+TOKEN : /*CADINALITY*/
+{
+		<NORTH: "N" >
+		|  <WEST: "W" >
+		|  <EAST: "E" >
+		|  <SOUTH: "S" >
 }
 
 
@@ -100,6 +131,10 @@ TOKEN :
 		| 	<T_MOVER>  "(" x=numero() ")" {world.moveForward(x);salida = "Comando MOVER ADELANTE";}  
 		|  <T_PONER> "("  objetoPoner() ")" {	salida = "Comando:  PONER"; }					  			
 		|  <T_RECOGER> "("  objetoRecoger()  ")"	{salida = "Comando:  Recoger";}
+		| "(" <T_CAMINAR> x=numero ")" {world.moveForward(x);salida = "Comando CAMINAR";}
+		|  "(" <T_ROTAR>  direcciones()  ")"{salida = "Comando ROTAR";}
+		| "(" <T_MIRAR> facing() ")" {salida = "Comando MIRAR";}
+		|  "(" <T_SOLTAR> x=numero ")" 
 		)  
 
 		{
@@ -117,6 +152,42 @@ TOKEN :
 
 		| <EOF> {return false;} 
 	}
+
+	void direcciones():
+	{	
+	}
+	{
+		(  <LEFT>{world.turnRight(); world.turnRight(); world.turnRight();})
+		| (  <RIGHT>{world.turnRight()})
+		| (  <BACK>{world.turnRight(); world.turnRight();} )
+	}
+
+	void facing()
+	{	
+	}
+	{
+		(  <NORTH> {if (world.getFacing()==0) salida = "YA MIRA AL NORTE";
+					else if(world.getFacing()==1){ world.turnRight(); world.turnRight();}
+					else if(world.getFacing()==2){ world.turnRight(); world.turnRight(); world.turnRight();}
+					else if(world.getFacing()==3){ world.turnRight();}
+		})
+		| (  <EAST>{if (world.getFacing()==2) salida = "YA MIRA AL ESTE";
+					else if(world.getFacing()==0){ world.turnRight();}
+					else if(world.getFacing()==1){ world.turnRight();world.turnRight(); world.turnRight();}
+					else if(world.getFacing()==3){ world.turnRight(); world.turnRight();}
+		})
+		| (  <WEST>{if (world.getFacing()==3) salida = "YA MIRA AL OESTE";
+					else if(world.getFacing()==0){ world.turnRight(); world.turnRight(); world.turnRight();}
+					else if(world.getFacing()==1){ world.turnRight();}
+					else if(world.getFacing()==2){ world.turnRight(); world.turnRight();}
+		})
+		| (  <SOUTH>{if (world.getFacing()==1) salida = "YA MIRA AL SUR";
+					else if(world.getFacing()==0){ world.turnRight(); world.turnRight();}
+					else if(world.getFacing()==2){ world.turnRight();}
+					else if(world.getFacing()==3){ world.turnRight(); world.turnRight(); world.turnRight();}
+		})
+	}
+	  
 
 	void objetoPoner() :
 	{
