@@ -42,9 +42,11 @@ public class Robot
 
 
 	private RobotWorldDec world;
+	private HashSet<String> vars;
 	
 	
 	void setWorld(RobotWorld w) {
+	  	vars= new HashSet< >();
 		world = (RobotWorldDec) w;	
 	}
 
@@ -101,6 +103,12 @@ TOKEN :
 		|  	<#DIGIT: ["0"-"9"] >
 }
 
+TOKEN : /*VARIABLE*/
+{
+		<VARIABLE: (<CHARACTER>)+ >
+		|  	<#CHARACTER: ["a"-"z"] >
+}
+
 TOKEN : /*DIRECTIONS*/
 {
 		<LEFT: "left" >
@@ -118,13 +126,11 @@ TOKEN : /*CADINALITY*/
 
 
 	boolean command(StringBuffer sistema) :
-	{	
-		
+	{			
 		int x;
-		String salida=new String();
-		
-	}
-	
+		String y; 
+		String salida=new String();		
+	}	
 	{
 		(
 		   <T_TURNRIGHT> "(" ")" {world.turnRight();salida = "Comando GIRAR DER";}
@@ -134,7 +140,13 @@ TOKEN : /*CADINALITY*/
 		| "(" <T_CAMINAR> x=numero ")" {world.moveForward(x);salida = "Comando CAMINAR";}
 		|  "(" <T_ROTAR>  direcciones()  ")"{salida = "Comando ROTAR";}
 		| "(" <T_MIRAR> facing() ")" {salida = "Comando MIRAR";}
-		|  "(" <T_SOLTAR> x=numero ")" 
+		|  "(" <T_SOLTAR> numeroOVariable() ")" {salida = "Comando SOLTAR";}
+		|  "(" <T_LIBERAR> numeroOVariable() ")" {salida = "Comando LIBERAR";}
+		|  "(" <T_COGER> numeroOVariable() ")" {salida = "Comando COGER";}
+		|  "(" <T_CAMINAR_A > numeroOVariable() cardinalidad() ")" {salida = "Comando CAMINAR A";}
+		|  "(" <T_NOP>	")" {salida = "Comando NOP";}
+		
+		
 		)  
 
 		{
@@ -151,6 +163,25 @@ TOKEN : /*CADINALITY*/
 		
 
 		| <EOF> {return false;} 
+	}
+
+	int cardinalidad()
+	{ }
+	{
+		<NORTH>
+		|  <WEST>
+		|  <EAST>
+		|  <SOUTH>
+	}
+
+	int numeroOVariable()
+	{ 	int x= -487;
+		String y=null;
+	}
+	{
+		y= variableString() { if(vars.contains(y)) return 100;}
+		| n=numero() { if(x != -487) return x;}
+		{ throw new Error("No se reconoce la variable o el numero");}
 	}
 
 	void direcciones():
@@ -233,6 +264,27 @@ TOKEN : /*CADINALITY*/
 				// Dada la forma de NUMERO, sabemos que solo puede tener d�gitos
 				// Por lo tanto, lo unico que podria pasar es que el numero sea muy grande
 				throw new Error("Numero demasiado grande: "+token.image+"!!");
+			}
+			return total;
+		}
+	}
+
+	int variableString() throws Error:
+	{	
+		String total=null;
+	}
+	{
+		<VARIABLE>
+		{
+			try 
+			{
+				total = token.image;
+			} 
+			catch (Exception ee) 
+			{
+				// Dada la forma de NUMERO, sabemos que solo puede tener d�gitos
+				// Por lo tanto, lo unico que podria pasar es que el numero sea muy grande
+				throw new Error("String no valido  "+token.image+"!!");
 			}
 			return total;
 		}
