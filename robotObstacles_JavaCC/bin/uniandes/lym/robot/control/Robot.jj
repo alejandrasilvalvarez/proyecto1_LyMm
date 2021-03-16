@@ -76,7 +76,8 @@ TOKEN: /* Nombres de Comandos */
 		| 	<T_COGER: "grab">
 		| 	<T_CAMINAR_A: "walkTo">
 		| 	<T_NOP: "NOP">
-		| 	<T_BLOCK: "block">	
+		| 	<T_BLOCK: "block">
+		| 	<T_DEFINE: "define">	
 }
 
 TOKEN :
@@ -129,12 +130,14 @@ TOKEN : /*CADINALITY*/
 	{			
 		int x;
 		String y; 
-		String salida=new String();		
+		String salida=new String();
+		String funcion;
 	}	
 	{
-		(
-		   
-		"(" <T_BLOCK> (commandos())+	")" {salida = "Comando BLOCK";}			
+		(		   
+		"(" <T_BLOCK> (commandos())+	")" {salida = "Comando BLOCK";}
+		| "(" 'f' funcion=variableString() "(" ")" ")" {funcion.length(); salida = "Comando FUNCION";}
+		| "(" <T_DEFINE> y=variableString() x=numero() ")" {vars.put(y,x); salida = "Comando DEFINE";}
 		) 
 		{
 		    try {
@@ -144,15 +147,18 @@ TOKEN : /*CADINALITY*/
 	    			    }	    			 
 			sistema.append(salida);
 			return true;
-		}
-
-		
+		}		
 
 		| <EOF> {return false;} 
 	}
 
 	void commandos()
-	{ }
+	{
+	  int x;
+		String y; 
+		String salida=new String();	
+
+	}
 	{
 		<T_TURNRIGHT> "(" ")" {world.turnRight();salida = "Comando GIRAR DER";}
 		| 	<T_MOVER>  "(" x=numero() ")" {world.moveForward(x);salida = "Comando MOVER ADELANTE";}  
@@ -184,7 +190,7 @@ TOKEN : /*CADINALITY*/
 		String y=null;
 	}
 	{
-		y= variableString() { if(vars.contains(y)) return 100;}
+		y= variableString() { if(vars.containsValue(y)) return 100;}
 		| n=numero() { if(x != -487) return x;}
 		{ throw new Error("No se reconoce la variable o el numero");}
 	}
