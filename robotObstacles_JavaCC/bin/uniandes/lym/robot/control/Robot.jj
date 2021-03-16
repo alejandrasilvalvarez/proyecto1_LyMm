@@ -40,13 +40,12 @@ import java.util.LinkedList;
 public class Robot 
 {
 
-
 	private RobotWorldDec world;
-	private HashSet<String> vars;
+	private HashMap<String, Object> vars;
 	
 	
 	void setWorld(RobotWorld w) {
-	  	vars= new HashSet< >();
+	  	vars= new HashMap< >();
 		world = (RobotWorldDec) w;	
 	}
 
@@ -76,7 +75,8 @@ TOKEN: /* Nombres de Comandos */
 		| 	<T_LIBERAR: "free">
 		| 	<T_COGER: "grab">
 		| 	<T_CAMINAR_A: "walkTo">
-		| 	<T_NOP: "NOP">		
+		| 	<T_NOP: "NOP">
+		| 	<T_BLOCK: "block">	
 }
 
 TOKEN :
@@ -133,7 +133,28 @@ TOKEN : /*CADINALITY*/
 	}	
 	{
 		(
-		   <T_TURNRIGHT> "(" ")" {world.turnRight();salida = "Comando GIRAR DER";}
+		   
+		"(" <T_BLOCK> (commandos())+	")" {salida = "Comando BLOCK";}			
+		) 
+		{
+		    try {
+	    			        Thread.sleep(2000);
+	    			    } catch (InterruptedException e) {
+	    			        System.err.format("IOException: %s%n", e);
+	    			    }	    			 
+			sistema.append(salida);
+			return true;
+		}
+
+		
+
+		| <EOF> {return false;} 
+	}
+
+	void commandos()
+	{ }
+	{
+		<T_TURNRIGHT> "(" ")" {world.turnRight();salida = "Comando GIRAR DER";}
 		| 	<T_MOVER>  "(" x=numero() ")" {world.moveForward(x);salida = "Comando MOVER ADELANTE";}  
 		|  <T_PONER> "("  objetoPoner() ")" {	salida = "Comando:  PONER"; }					  			
 		|  <T_RECOGER> "("  objetoRecoger()  ")"	{salida = "Comando:  Recoger";}
@@ -145,26 +166,10 @@ TOKEN : /*CADINALITY*/
 		|  "(" <T_COGER> numeroOVariable() ")" {salida = "Comando COGER";}
 		|  "(" <T_CAMINAR_A > numeroOVariable() cardinalidad() ")" {salida = "Comando CAMINAR A";}
 		|  "(" <T_NOP>	")" {salida = "Comando NOP";}
-		
-		
-		)  
-
-		{
-		    try {
-	    			        Thread.sleep(2000);
-	    			    } catch (InterruptedException e) {
-	    			        System.err.format("IOException: %s%n", e);
-	    			    }
-	    			 
-			sistema.append(salida);
-			return true;
-		}
-
-		
-
-		| <EOF> {return false;} 
 	}
 
+
+	
 	int cardinalidad()
 	{ }
 	{
